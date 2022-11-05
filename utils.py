@@ -1,4 +1,4 @@
-# DIvisão modulo-2, utilizando XOR
+# Divisão modulo-2, utilizando XOR
 def mod2div(dividend: int, divisor: int) -> int:
 	# [2:] para ignorar o prefixo '0b'
 	DIVIDEND_AS_BITS = bin(dividend)[2:]
