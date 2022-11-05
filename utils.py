@@ -36,4 +36,4 @@ def mod2div(dividend: int, divisor: int) -> int:
 		dividend_slice = m_bin(int('0'*cursor, base=2) ^ int(dividend_slice, base=2))
 
 	remainder = dividend_slice
-	return remainder
+	return int(remainder, base=2)
