@@ -1,26 +1,39 @@
 from utils import mod2div
 import socket
 
-# Utilize essa opção para forçar um erro na mensagem enviada
-FORCE_ERROR = False
-
 HOST = "127.0.0.1"
 PORT = 60001
 
-# Gerador de 16 bits, o padrão geralmente possui 17, mas foi removido um bit para permitir
-# que caiba em uma mensagem de 32 bits. 16 bits de mensagem + 16 bits de checksum
-CRC_16_DIVISOR = 0b1100000000000101
+# Gerador de 16 bits, CRC-16-Chakravarty.
+CRC_16_DIVISOR = 0x2F15
+
+# Pergunta a quem está rodando ao script se irá forçar um bit-flip
+while True:
+    option = input('Deseja forçar um erro na mensagem enviada? (S/N): ')
+    option = option.capitalize()[0]
+    if option == 'S':
+        force_error = True
+        break
+    elif option == 'N':
+        force_error = False
+        break
+    else:
+        print('Deve ser S ou N')
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
     # Mensagem: 'oi' em binário
+    # ASCII: 6f -> o, 69 -> i
+    # 016b: Escreve como binário com 16 bits, com zeros à esquerda se necessário
     bits_sent = format(0x6f69, '016b')
-    # Calculando checksum
+    # Adicionando 16 bits zerados ao fim da mensagem e aplicando divisão módulo 2
+    # O resto da divisão é recebido
     dividend = mod2div(0x6f690000, CRC_16_DIVISOR)
-    if FORCE_ERROR:
+    if force_error:
         # Forçando um erro, alterando um bit da mensagem enviada
+        # Concatenando o resto da divisão módulo 2
         treated_message = format(0x6f68, '016b') + format(dividend, '016b')
     else:
-        # Mensagem correta
+        # Mensagem correta, concatenando o resto da divisão módulo 2
         treated_message = bits_sent + format(dividend, '016b')
     message = s.send(int.to_bytes(int(treated_message, base=2), length=4, byteorder='big'))

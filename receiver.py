@@ -4,9 +4,8 @@ import socket
 HOST = "127.0.0.1"
 PORT = 60001
 
-# Gerador de 16 bits, o padrão geralmente possui 17, mas foi removido um bit para permitir
-# que caiba em uma mensagem de 32 bits. 16 bits de mensagem + 16 bits de checksum
-CRC_16_DIVISOR = 0b1100000000000101
+# Gerador de 16 bits, CRC-16-Chakravarty.
+CRC_16_DIVISOR = 0x2F15
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
@@ -16,9 +15,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     recv_message = received_message_with_checksum[0:2]
     checksum = received_message_with_checksum[2:4]
     print(f"Mensagem recebida: {recv_message.decode('ascii')}")
-    print(f"Checksum recebido: {format(int.from_bytes(checksum, byteorder='big'), '016b')}")
+    print(f"Sufixo/dividendo recebido: {format(int.from_bytes(checksum, byteorder='big'), '016b')}")
     mod2div_remainder = mod2div(int.from_bytes(received_message_with_checksum, byteorder='big'), CRC_16_DIVISOR)
-    print(f"Resultado da divisão módulo 2: {mod2div(int.from_bytes(received_message_with_checksum, byteorder='big'), CRC_16_DIVISOR)}")
+    print(f"Resto da divisão módulo 2: {mod2div(int.from_bytes(received_message_with_checksum, byteorder='big'), CRC_16_DIVISOR)}")
     if mod2div_remainder == 0:
         print("Logo a mensagem recebida é correta.")
     else:
